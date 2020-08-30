@@ -46,11 +46,13 @@
                 </div>
                 <div class="level" id="forecast">
                     <h3 id="forecast-header"></h3>
-                    <div class="column" id="first-day-forecast"></div>
-                    <div class="column" id="second-day-forecast"></div>
-                    <div class="column" id="third-day-forecast"></div>
-                    <div class="column" id="fourth-day-forecast"></div>
-                    <div class="column" id="fifth-day-forecast"></div>
+                    <div class="columns is-mobile">
+                    <div class="column" id="0-day-forecast"></div>
+                    <div class="column" id="1-day-forecast"></div>
+                    <div class="column" id="2-day-forecast"></div>
+                    <div class="column" id="3-day-forecast"></div>
+                    <div class="column" id="4-day-forecast"></div>
+                    </div>
                 </div> 
                 
                 
@@ -126,9 +128,21 @@ $(document).ready(function() {
                 uvEl.text("UV Index: " + currentUV); // have to set a data-attribute so that we can then do an if statement for when to turn different colors 
 
                 for (i = 0; i < weatherResponse.daily.length - 3; i++) {
+                    var forecastDate = "";
+                    var forecastIcon = "http://openweathermap.org/img/w/" + weatherResponse.daily[i].weather[0].icon + ".png";
                     var forecastTempK = weatherResponse.daily[i].temp.day;
                     var forecastTemperature = ((forecastTempK - 273.15) * 1.80 + 32).toFixed(2);
-                    var forecastIcon = "http://openweathermap.org/img/w/" + weatherResponse.daily[i].weather[0].icon + ".png";
+                    var forecastHumidity = weatherResponse.daily[i].humidity;
+
+                    var forecastEl = $("#" + i + "-day-forecast");
+
+                    forecastEl.append(
+                        "<p>Temperature: " + forecastTemperature + "F </p>"
+                    );
+                    forecastEl.append(
+                        "<p>Humidity: " + forecastHumidity + "%</p>"
+                    );
+                    
                 }
 
                 }) 
