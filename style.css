@@ -1,0 +1,11 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+button {
+    display: inline-block;
+}
+
+.column {
+    border: thick;
+}

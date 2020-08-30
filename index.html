@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+        <link
+        rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+        crossorigin="anonymous"
+        />
+        <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap"
+        rel="stylesheet"
+        />
+        <link rel="stylesheet" href="style.css" />
+        <title>Weather Dashboard</title>
+    </head>
+
+    <body>
+        <header>
+            <h1 class="title is-1 has-text-centered">Weather Dashboard</h1>
+        </header>
+        <div class="container columns is-mobile">
+            <div class="column is-one-third" id="search">
+                
+                <div class="level" id="search-box">
+                    <h6>Search for a City:</h6>
+                    <input type="text" id="search-value"></input><button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="level">
+                    <ul id="search-history"></ul>
+                </div>
+            </div>
+            <div class="column" id="dashboard">
+                <div class="level" id="daily-weather">
+                    <h2 id="current-heading"></h2>
+                    <p id="current-temperature"></p>
+                    <p id="current-humidity"></p>
+                    <p id="current-wind"></p>
+                    <p id="current-uv"></p>
+                    
+                </div>
+                <div class="level" id="forecast">
+                    <h3 id="forecast-header"></h3>
+                    <div class="column" id="first-day-forecast"></div>
+                    <div class="column" id="second-day-forecast"></div>
+                    <div class="column" id="third-day-forecast"></div>
+                    <div class="column" id="fourth-day-forecast"></div>
+                    <div class="column" id="fifth-day-forecast"></div>
+                </div> 
+                
+                
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    
+        
+    <script type="text/javascript">
+$(document).ready(function() {
+
+        $("#search-btn").on("click", function(event) {
+            event.preventDefault();
+            // Grabs input from #search-value
+            var cityName = $("#search-value").val().trim(); // Figure out way to capitalize first letter
+            console.log(cityName);
+            // This is our API key
+            var APIKey = "166a433c57516f51dfab1f7edaed8413";
+            // Here we are building the URL we need to query the database
+            var queryURL = "http://api.openweathermap.org/data/2.5/weather?q=" + cityName + "&appid=" + APIKey;
+            console.log(queryURL);
+
+            $.ajax({
+            url: queryURL,
+            method: "GET"
+            })
+            // We store all of the retrieved data inside of an object called "response"
+            .then(function(response) {
+                console.log("The general weather response is", response);
+
+                var latitude = response.coord.lat; 
+                var longitude = response.coord.lon; 
+                
+                var oneCallURL = "https://api.openweathermap.org/data/2.5/onecall?lat="+ latitude + "&lon=" + longitude +"&exclude=minutely,hourly&appid=" + APIKey;
+                // var uviURL = "http://api.openweathermap.org/data/2.5/uvi?appid=" + APIKey + "&lat=" + latitude + "&lon=" + longitude;
+
+                $.ajax({
+                    url: oneCallURL,
+                    method: "GET"
+                })
+                .then(function(weatherResponse) {
+                    console.log("A more broad and detailed weather response based on location is", weatherResponse);
+
+                var currentCityName = response.name;
+                var tempK = weatherResponse.current.temp;
+                var currentTemperature = ((tempK - 273.15) * 1.80 + 32).toFixed(2);
+                var currentHumidity = weatherResponse.current.humidity;
+                var currentWindSpeed = weatherResponse.current.wind_speed;
+                var currentIcon = weatherResponse.current.weather[0].icon;
+                var currentIconURL = "https://openweathermap.org/img/w/" + currentIcon + ".png";
+                var currentUV = weatherResponse.current.uvi;
+                
+
+                // var currentDate = moment().format("llll");
+
+                var searchHistoryEl = $("#search-history");
+                var headingEl = $("#current-heading");
+                var temperatureEl = $("#current-temperature");
+                var humidityEl = $("#current-humidity");
+                var windEl = $("#current-wind");
+                var uvEl = $("#current-uv");
+
+                // Eventually need to wrap in a function so that it can be called within another function that will also store to local storage
+                searchHistoryEl.append(
+                    "<li>" + currentCityName + "</li>"
+                );
+
+                // Eventually need to wrap in a different function, so that nothing appends over each other and all elements are cleared out first
+                headingEl.text(currentCityName + " (where the date will go)");
+                temperatureEl.text("Temperature: " + currentTemperature + "F");
+                humidityEl.text("Humidity: " + currentHumidity + "%");
+                windEl.text("Wind Speed: " + currentWindSpeed + " MPH");
+                uvEl.text("UV Index: " + currentUV); // have to set a data-attribute so that we can then do an if statement for when to turn different colors 
+
+                for (i = 0; i < weatherResponse.daily.length - 3; i++) {
+                    var forecastTempK = weatherResponse.daily[i].temp.day;
+                    var forecastTemperature = ((forecastTempK - 273.15) * 1.80 + 32).toFixed(2);
+                    var forecastIcon = "http://openweathermap.org/img/w/" + weatherResponse.daily[i].weather[0].icon + ".png";
+                }
+
+                }) 
+
+                
+            }) 
+        })
+})
+            </script>
+
+    </body>
+</html>
