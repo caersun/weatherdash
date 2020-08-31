@@ -29,7 +29,7 @@
                 
                 <div class="level" id="search-box">
                     <h6>Search for a City:</h6>
-                    <input type="text" id="search-value"></input><button id="search-btn"><i class="fas fa-search"></i></button>
+                    <div id="btn-container"><input type="text" id="search-value"></input><button id="search-btn" style="display: inline;"><i class="fas fa-search"></i></button></div>
                 </div>
                 <div class="level">
                     <ul id="search-history"></ul>
@@ -37,11 +37,6 @@
             </div>
             <div class="column" id="dashboard">
                 <div class="level" id="daily-weather">
-                    <h2 id="current-heading"></h2>
-                    <p id="current-temperature"></p>
-                    <p id="current-humidity"></p>
-                    <p id="current-wind"></p>
-                    <p id="current-uv"></p>
                     
                 </div>
                 <div class="level" id="forecast">
@@ -64,92 +59,198 @@
     <script type="text/javascript">
 $(document).ready(function() {
 
-        $("#search-btn").on("click", function(event) {
-            event.preventDefault();
-            // Grabs input from #search-value
-            var cityName = $("#search-value").val().trim(); // Figure out way to capitalize first letter
-            console.log(cityName);
-            // This is our API key
-            var APIKey = "166a433c57516f51dfab1f7edaed8413";
-            // Here we are building the URL we need to query the database
-            var queryURL = "http://api.openweathermap.org/data/2.5/weather?q=" + cityName + "&appid=" + APIKey;
-            console.log(queryURL);
+    // Because we need to be able to call localStorage and render lattest, global variables must be set to blank strings before an on-click event
+    var cityName = "";
+    var currentCityName = "";
+    var currentTemperature = "";
+    var currentHumidity = "";
+    var currentWindSpeed = "";
+    var currentIcon = "";
+    var currentUVI = "";
+    var lattestStoredCity = "";
+    // const currentDate = moment().format("llll"); 
+    // HOW TF DO YOU GET A DATE TO SHOW
+
+    var searchHistory = [];
+
+    var searchHistoryEl = $("#search-history");
+    var dashboardEl = $("#daily-weather");
+
+    // Render search history from localStorage and render weather of lattest city searched
+    loadStored();
+
+    // Render weather from search input
+    $("#search-btn").on("click", function(event) {
+        event.preventDefault();
+
+        var inputCityName = $("#search-value").val().trim();
+        console.log(inputCityName);
+        cityName = inputCityName;
+
+        emptyWeather();  
+        renderWeather();
+
+        $("#search-value").val("");
+    });
+    
+    // If a element within #search-history is clicked, then data-clicked === true; thus, prevents, re-rendering in localStorage and #search-history
+    $("#search-history").click(function(){
+            $(this).data("clicked", true);
+        });
+
+    // Render weather from search history
+    $("#search-history").on("click", ".city", function(anotherEvent) {
+        anotherEvent.preventDefault();
+    
+        // console.log("We are clicking on a city in the search history");
+        var listCityName = $(this).data("city");
+        // console.log(listCityName);
+        cityName = listCityName;
+        
+        emptyWeather();
+        renderWeather();
+    }); 
+    
+    function loadStored() {
+        // renderLatestInput();
+
+        var storedCities = JSON.parse(localStorage.getItem("cities"));
+
+        if (storedCities !== null) {
+            searchHistory = storedCities;
+
+            for (var i = 0; i < searchHistory.length; i++) {
+                // console.log(searchHistory);
+                // console.log(searchHistory[i]);
+                var searchHistoryStorage = searchHistory[i];
+                var cityFromStorage = searchHistoryStorage.newCity;
+                // console.log(cityFromStorage);
+                var historyListEl = $(`<li class="city" data-city="` + cityFromStorage + `">` + cityFromStorage + `</li>`);
+
+                searchHistoryEl.prepend(historyListEl);
+            }
+        
+            lattestStoredCity = searchHistory[searchHistory.length-1];
+            console.log("The lattest city searched is:" + lattestStoredCity.newCity);
+            cityName = lattestStoredCity.newCity;
+
+            renderWeather();
+        }
+    }; 
+
+    function emptyWeather() {
+        dashboardEl.empty();
+        $("#0-day-forecast").empty();
+        $("#1-day-forecast").empty();
+        $("#2-day-forecast").empty();
+        $("#3-day-forecast").empty();
+        $("#4-day-forecast").empty();
+    };
+
+    function renderWeather() {
+        // This is our API key
+        var APIKey = "166a433c57516f51dfab1f7edaed8413";
+        // Here we are building the URL we need to query the initial database
+        var queryURL = "http://api.openweathermap.org/data/2.5/weather?q=" + cityName + "&appid=" + APIKey;
+        // console.log(queryURL);
+
+        $.ajax({
+        url: queryURL,
+        method: "GET"
+        })
+        // We store all of the retrieved data inside of an object called "response". This will get us the latitude/longitude that will allow us to do another call for more details weather data.
+        .then(function(response) {
+            // console.log("The general weather response is", response);
+
+            var latitude = response.coord.lat; 
+            var longitude = response.coord.lon; 
+            
+            var oneCallURL = "https://api.openweathermap.org/data/2.5/onecall?lat="+ latitude + "&lon=" + longitude +"&exclude=minutely,hourly&appid=" + APIKey;
 
             $.ajax({
-            url: queryURL,
-            method: "GET"
+                url: oneCallURL,
+                method: "GET"
             })
-            // We store all of the retrieved data inside of an object called "response"
-            .then(function(response) {
-                console.log("The general weather response is", response);
+            //  Store all retrieved data in object "weatherResponse"
+            .then(function(weatherResponse) {
+            // console.log("A more broad and detailed weather response based on location is", weatherResponse);                
 
-                var latitude = response.coord.lat; 
-                var longitude = response.coord.lon; 
-                
-                var oneCallURL = "https://api.openweathermap.org/data/2.5/onecall?lat="+ latitude + "&lon=" + longitude +"&exclude=minutely,hourly&appid=" + APIKey;
-                // var uviURL = "http://api.openweathermap.org/data/2.5/uvi?appid=" + APIKey + "&lat=" + latitude + "&lon=" + longitude;
+            currentCityName = response.name;
+            currentDate = "cannot formulate :(";
+            var tempK = weatherResponse.current.temp;
+            currentTemperature = ((tempK - 273.15) * 1.80 + 32).toFixed(2);
+            currentHumidity = weatherResponse.current.humidity;
+            currentWindSpeed = weatherResponse.current.wind_speed;
+            currentIcon = "https://openweathermap.org/img/w/" + weatherResponse.current.weather[0].icon + ".png";
+            currentIconAlt = weatherResponse.current.weather[0].description;
+            currentUVI = weatherResponse.current.uvi;
+            
+            
+            // Render dashboard
+            var dashHeaderEl = $(`<h2>` + currentCityName + ` (` + currentDate +`) - <img SameSite="None" src="` + currentIcon + `" alt="` + currentIconAlt + `"></h2>`);
+            var dashTemperatureEl = $(`<p>Temperature: ` + currentTemperature + `F </p>`);
+            var dashHumidityEl = $(`<p>Humidity: ` + currentHumidity + `%</p>`);
+            var dashWindSpeedEl = $(`<p>Wind Speed: ` + currentWindSpeed + ` MPH</p>`);
+            var dashUVIEl = $(`<p>UV Index: ` + currentUVI + `</p>`); 
+            var historyListEl = $(`<li class="city" data-city="` + currentCityName + `">` + currentCityName + `</li>`);
 
-                $.ajax({
-                    url: oneCallURL,
-                    method: "GET"
-                })
-                .then(function(weatherResponse) {
-                    console.log("A more broad and detailed weather response based on location is", weatherResponse);
+            dashboardEl.append(dashHeaderEl);
+            dashboardEl.append(dashTemperatureEl);
+            dashboardEl.append(dashHumidityEl);
+            dashboardEl.append(dashWindSpeedEl);
+            dashboardEl.append(dashUVIEl); 
 
-                var currentCityName = response.name;
-                var tempK = weatherResponse.current.temp;
-                var currentTemperature = ((tempK - 273.15) * 1.80 + 32).toFixed(2);
-                var currentHumidity = weatherResponse.current.humidity;
-                var currentWindSpeed = weatherResponse.current.wind_speed;
-                var currentIcon = weatherResponse.current.weather[0].icon;
-                var currentIconURL = "https://openweathermap.org/img/w/" + currentIcon + ".png";
-                var currentUV = weatherResponse.current.uvi;
-                
+            dashUVIEl.attr("data-uvi", currentUVI);
+            if (dashUVIEl.attr("data-uvi") >= 0 && dashUVIEl.attr("data-uvi") < 3) {
+                dashUVIEl.addClass("favorable");
+            } else if (dashUVIEl.attr("data-uvi") >= 3 && dashUVIEl.attr("data-uvi") < 6) {
+                dashUVIEl.addClass("moderate");
+            } else if (dashUVIEl.attr("data-uvi") >= 6) {
+                dashUVIEl.addClass("severe");
+            } 
+            
+            // Render 5-day forecast
+            for (i = 0; i < weatherResponse.daily.length - 3; i++) {
+                var forecastDate = "";
+                var forecastIcon = "http://openweathermap.org/img/w/" + weatherResponse.daily[i].weather[0].icon + ".png";
+                var forecastIconAlt = weatherResponse.daily[i].weather[0].description;
+                var forecastTempK = weatherResponse.daily[i].temp.day;
+                var forecastTemperature = ((forecastTempK - 273.15) * 1.80 + 32).toFixed(2);
+                var forecastHumidity = weatherResponse.daily[i].humidity;
 
-                // var currentDate = moment().format("llll");
+                var forecastEl = $("#" + i + "-day-forecast");
 
-                var searchHistoryEl = $("#search-history");
-                var headingEl = $("#current-heading");
-                var temperatureEl = $("#current-temperature");
-                var humidityEl = $("#current-humidity");
-                var windEl = $("#current-wind");
-                var uvEl = $("#current-uv");
+                forecastEl.append(`<img SameSite="None" src="` + forecastIcon + `"alt="` + forecastIconAlt + `">`);
+                forecastEl.append("<p>Temperature: " + forecastTemperature + "F </p>");
+                forecastEl.append("<p>Humidity: " + forecastHumidity + "%</p>");
+            };
 
-                // Eventually need to wrap in a function so that it can be called within another function that will also store to local storage
-                searchHistoryEl.append(
-                    "<li>" + currentCityName + "</li>"
-                );
-
-                // Eventually need to wrap in a different function, so that nothing appends over each other and all elements are cleared out first
-                headingEl.text(currentCityName + " (where the date will go)");
-                temperatureEl.text("Temperature: " + currentTemperature + "F");
-                humidityEl.text("Humidity: " + currentHumidity + "%");
-                windEl.text("Wind Speed: " + currentWindSpeed + " MPH");
-                uvEl.text("UV Index: " + currentUV); // have to set a data-attribute so that we can then do an if statement for when to turn different colors 
-
-                for (i = 0; i < weatherResponse.daily.length - 3; i++) {
-                    var forecastDate = "";
-                    var forecastIcon = "http://openweathermap.org/img/w/" + weatherResponse.daily[i].weather[0].icon + ".png";
-                    var forecastTempK = weatherResponse.daily[i].temp.day;
-                    var forecastTemperature = ((forecastTempK - 273.15) * 1.80 + 32).toFixed(2);
-                    var forecastHumidity = weatherResponse.daily[i].humidity;
-
-                    var forecastEl = $("#" + i + "-day-forecast");
-
-                    forecastEl.append(
-                        "<p>Temperature: " + forecastTemperature + "F </p>"
-                    );
-                    forecastEl.append(
-                        "<p>Humidity: " + forecastHumidity + "%</p>"
-                    );
-                    
+            // On page load or if click on list element, then return; else store in localStorage and push to searchHistory array
+            if ($("#search-history").data("clicked")) {
+                return;
+            } else if (cityName === lattestStoredCity.newCity) {
+                return;
+            } else {
+                var historyListEl = $(`<li class="city" data-city="` + currentCityName + `">` + currentCityName + `</li>`);
+                searchHistoryEl.prepend(historyListEl);
+                        
+                // Store city in localStorage (pushed to searchHistory array)
+                // Return from function if no new city is added
+                if ($("#search-history").val === "") {
+                    return;
                 }
+                var newCity = currentCityName;
+                var newCityObject = {newCity: newCity, };
 
-                }) 
+                searchHistory.push(newCityObject);
+                localStorage.setItem("cities", JSON.stringify(searchHistory));
+            };
 
-                
-            }) 
-        })
+        }) 
+
+        }) 
+        };
+
 })
             </script>
 
