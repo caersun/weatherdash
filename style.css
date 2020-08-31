@@ -1,11 +1,50 @@
 * {
     font-family: Arial, Helvetica, sans-serif;
+    font-size: 15 px;
+    line-height: 1;
+    color: rgb(70, 70, 70);
 }
 
-button {
-    display: inline-block;
+ul {
+    list-style-type: none;
+    padding: 0;
+    background-color: white;
 }
 
-.column {
-    border: thick;
+li {
+    border-style: 1px solid;
+    border-color: rgb(70, 70, 70);
+    height: 25px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 5px;
+    background-color: rgb(202, 231, 238);
+    color: rgb(70, 70, 70);
+    line-height: 1.5;
 }
+
+li:hover {
+    background-color: lightskyblue;
+}
+
+.button.is-info {
+    background-color: lightskyblue;
+    color: rgb(70, 70, 70);
+}
+
+.container {
+    padding: 10px;
+}
+
+.forecast {
+    background-color: lightskyblue;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+#daily-weather {
+    border-bottom: 1px solid lightskyblue;
+    display: block;
+    padding: 10px;
+}
+

@@ -24,33 +24,45 @@
         <header>
             <h1 class="title is-1 has-text-centered">Weather Dashboard</h1>
         </header>
-        <div class="container columns is-mobile">
-            <div class="column is-one-third" id="search">
-                
-                <div class="level" id="search-box">
-                    <h6>Search for a City:</h6>
-                    <div id="btn-container"><input type="text" id="search-value"></input><button id="search-btn" style="display: inline;"><i class="fas fa-search"></i></button></div>
+        <div class="container">
+            <div class="columns is-mobile">
+                <div class="column is-one-third" id="search">
+                    
+                    <div class="level" id="search-box">
+                        <div id="btn-container" class="field">
+                            
+                            <label class="label">Search for a City: </label>
+                            <div class="field-body has-addons">
+                                <div class="control">
+                                    <input class="input" type="text" id="search-value">
+                                </div>
+                                <div class="control">
+                                    <button class="button is-info" id="search-btn"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                        </div>  
+                    </div>
+                    <div class="level">
+                        <ul id="search-history"></ul>
+                    </div>
                 </div>
-                <div class="level">
-                    <ul id="search-history"></ul>
-                </div>
-            </div>
-            <div class="column" id="dashboard">
-                <div class="level" id="daily-weather">
+                <div class="column" id="dashboard">
+                    <div class="level" id="daily-weather">
+                        
+                    </div>
+                    <div class="level" id="forecast">
+                        <h3 id="forecast-header"></h3>
+                        <div class="columns is-mobile is-3">
+                        <div class="column forecast" id="0-day-forecast"></div>
+                        <div class="column forecast" id="1-day-forecast"></div>
+                        <div class="column forecast" id="2-day-forecast"></div>
+                        <div class="column forecast" id="3-day-forecast"></div>
+                        <div class="column forecast" id="4-day-forecast"></div>
+                        </div>
+                    </div> 
+                    
                     
                 </div>
-                <div class="level" id="forecast">
-                    <h3 id="forecast-header"></h3>
-                    <div class="columns is-mobile">
-                    <div class="column" id="0-day-forecast"></div>
-                    <div class="column" id="1-day-forecast"></div>
-                    <div class="column" id="2-day-forecast"></div>
-                    <div class="column" id="3-day-forecast"></div>
-                    <div class="column" id="4-day-forecast"></div>
-                    </div>
-                </div> 
-                
-                
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -72,6 +84,7 @@ $(document).ready(function() {
 
     const currentDate = moment().format("ll"); 
 
+    // Where previous searches will be stored and called
     var searchHistory = [];
 
     var searchHistoryEl = $("#search-history");
@@ -85,7 +98,7 @@ $(document).ready(function() {
         event.preventDefault();
 
         var inputCityName = $("#search-value").val().trim();
-        console.log(inputCityName);
+        // console.log(inputCityName);
         cityName = inputCityName;
 
         emptyWeather();  
@@ -94,7 +107,7 @@ $(document).ready(function() {
         $("#search-value").val("");
     });
     
-    // If a element within #search-history is clicked, then data-clicked === true; thus, prevents, re-rendering in localStorage and #search-history
+    // If an element within #search-history is clicked, then "clicked" === true; thus, preventing re-rendering in localStorage and #search-history
     $("#search-history").click(function(){
             $(this).data("clicked", true);
         });
@@ -132,7 +145,7 @@ $(document).ready(function() {
             }
         
             lattestStoredCity = searchHistory[searchHistory.length-1];
-            console.log("The lattest city searched is: " + lattestStoredCity.newCity);
+            console.log("The lattest city searched upon reload is: " + lattestStoredCity.newCity);
             cityName = lattestStoredCity.newCity;
 
             renderWeather();
@@ -159,7 +172,7 @@ $(document).ready(function() {
         url: queryURL,
         method: "GET"
         })
-        // We store all of the retrieved data inside of an object called "response". This will get us the latitude/longitude that will allow us to do another call for more details weather data.
+        // We store all of the retrieved data inside of an object called "response". This will get us the latitude/longitude that will allow us to do another call for more detailed weather data.
         .then(function(response) {
             // console.log("The general weather response is", response);
 
@@ -200,6 +213,7 @@ $(document).ready(function() {
             dashboardEl.append(dashWindSpeedEl);
             dashboardEl.append(dashUVIEl); 
 
+            // Depending on UVI, class set as favorable/moderate/severe to change background-color
             dashUVIEl.attr("data-uvi", currentUVI);
             if (dashUVIEl.attr("data-uvi") >= 0 && dashUVIEl.attr("data-uvi") < 3) {
                 dashUVIEl.addClass("favorable");
@@ -226,20 +240,20 @@ $(document).ready(function() {
                 forecastEl.append("<p>Humidity: " + forecastHumidity + "%</p>");
             };
 
-            // On page load or if click on list element, then return; else store in localStorage and push to searchHistory array
-            if ($("#search-history").data("clicked")) {
-                return;
-            } else if (cityName === lattestStoredCity.newCity) {
+            // If click on list element or page load, then return; else store new search in localStorage and push to searchHistory array
+            if ($("#search-history").data("clicked") || cityName === lattestStoredCity.newCity) {
                 return;
             } else {
-                var historyListEl = $(`<li class="city" data-city="` + currentCityName + `">` + currentCityName + `</li>`);
-                searchHistoryEl.prepend(historyListEl);
-                        
-                // Store city in localStorage (pushed to searchHistory array)
                 // Return from function if no new city is added
                 if ($("#search-history").val === "") {
                     return;
                 }
+                
+                // Render newest search to #search-history
+                var historyListEl = $(`<li class="city" data-city="` + currentCityName + `">` + currentCityName + `</li>`);
+                searchHistoryEl.prepend(historyListEl);
+                        
+                // Store city in localStorage (pushed to searchHistory array)
                 var newCity = currentCityName;
                 var newCityObject = {newCity: newCity, };
 
