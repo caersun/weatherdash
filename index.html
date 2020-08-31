@@ -54,6 +54,7 @@
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     
         
     <script type="text/javascript">
@@ -68,8 +69,8 @@ $(document).ready(function() {
     var currentIcon = "";
     var currentUVI = "";
     var lattestStoredCity = "";
-    // const currentDate = moment().format("llll"); 
-    // HOW TF DO YOU GET A DATE TO SHOW
+
+    const currentDate = moment().format("ll"); 
 
     var searchHistory = [];
 
@@ -131,7 +132,7 @@ $(document).ready(function() {
             }
         
             lattestStoredCity = searchHistory[searchHistory.length-1];
-            console.log("The lattest city searched is:" + lattestStoredCity.newCity);
+            console.log("The lattest city searched is: " + lattestStoredCity.newCity);
             cityName = lattestStoredCity.newCity;
 
             renderWeather();
@@ -176,7 +177,6 @@ $(document).ready(function() {
             // console.log("A more broad and detailed weather response based on location is", weatherResponse);                
 
             currentCityName = response.name;
-            currentDate = "cannot formulate :(";
             var tempK = weatherResponse.current.temp;
             currentTemperature = ((tempK - 273.15) * 1.80 + 32).toFixed(2);
             currentHumidity = weatherResponse.current.humidity;
@@ -211,7 +211,7 @@ $(document).ready(function() {
             
             // Render 5-day forecast
             for (i = 0; i < weatherResponse.daily.length - 3; i++) {
-                var forecastDate = "";
+                var forecastDate = moment().add(i, 'days').format("l");
                 var forecastIcon = "http://openweathermap.org/img/w/" + weatherResponse.daily[i].weather[0].icon + ".png";
                 var forecastIconAlt = weatherResponse.daily[i].weather[0].description;
                 var forecastTempK = weatherResponse.daily[i].temp.day;
@@ -220,6 +220,7 @@ $(document).ready(function() {
 
                 var forecastEl = $("#" + i + "-day-forecast");
 
+                forecastEl.append(`<h3>` + forecastDate + `</h3>`);
                 forecastEl.append(`<img SameSite="None" src="` + forecastIcon + `"alt="` + forecastIconAlt + `">`);
                 forecastEl.append("<p>Temperature: " + forecastTemperature + "F </p>");
                 forecastEl.append("<p>Humidity: " + forecastHumidity + "%</p>");
