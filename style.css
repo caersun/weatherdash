@@ -48,3 +48,16 @@ li:hover {
     padding: 10px;
 }
 
+.favorable {
+    background-color: greenyellow;
+}
+
+.moderate {
+    background-color: yellow;
+}
+
+.severe {
+    background-color: red;
+    color: white;
+}
+
