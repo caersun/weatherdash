@@ -14,7 +14,8 @@ Access "Weather Dashboard" [HERE](https://caersun.github.io/weatherdash/)
 - OpenWeatherMap API
 
 ## What is Looks Like
-
+![Weather Dashboard functionality showing user search of "new york" and app generate weather of New York City.](assets/weatherdashdemo.gif)
+![Weather Dashboard functionality showing generation of weather dashboard from previous search on-click.](assets/weatherdashprevious)
 
 ## License
 MIT
