@@ -2,10 +2,7 @@
 
 "Weather Dashboard" is a dynamic weather dashboard based on city search, which displays the current weather and five-day forecast of the lattest searched city. User can search and store previous searches.
 
-## Deployed Application
-Access "Weather Dashboard" [HERE](https://caersun.github.io/weatherdash/)
-
-## Technologies Used
+## Tools
 - HTML5
 - CSS
 - JavaScript
@@ -13,12 +10,16 @@ Access "Weather Dashboard" [HERE](https://caersun.github.io/weatherdash/)
 - Moment.js
 - OpenWeatherMap API
 
-## What is Looks Like
+## Access and Installation
+Access live app: [caersun.github.io/weatherdash](https://caersun.github.io/weatherdash/)
+
+To install and run site locally, intilize with npm install or npm i. Then in the root directory run npm start.
+
+## View
 ![Weather Dashboard functionality showing user search of "new york" and app generate weather of New York City.](assets/weatherdashdemo.gif)
-![Weather Dashboard functionality showing generation of weather dashboard from previous search on-click.](assets/weatherdashprevious)
 
 ## License
-MIT
+Licensed under the MIT license
 
 ## Contact Me
 - [Email](i.cynthiagarcia@gmail.com) <br>
