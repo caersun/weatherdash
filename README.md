@@ -22,5 +22,5 @@ To install and run site locally, intilize with npm install or npm i. Then in the
 Licensed under the MIT license
 
 ## Contact Me
-- [Email](i.cynthiagarcia@gmail.com) <br>
-- [Portfolio](https://caersun.github.io/portfolio/)
+- [Email](mailto:i.cynthiagarcia@gmail.com) <br>
+- [Portfolio](https://cynthiagarcia.work)
